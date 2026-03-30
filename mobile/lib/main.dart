@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/scan_session_provider.dart';
+import 'providers/guidance_provider.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/camera_screen.dart';
 import 'screens/upload_summary_screen.dart';
@@ -17,6 +18,7 @@ class FormFittingPrintsApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ScanSessionProvider()),
+        ChangeNotifierProvider(create: (_) => GuidanceProvider()),
       ],
       child: MaterialApp(
         title: 'Form-Fitting Prints',
