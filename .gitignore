@@ -1,0 +1,61 @@
+# Ignore compiled output
+bin/
+obj/
+
+# Ignore local configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.user
+
+# Ignore build artifacts
+*.dll
+*.exe
+*.so
+*.dylib
+
+# Ignore generated files
+*.db
+*.sqlite3
+*.log
+
+# Ignore Flutter/Dart
+flutter_exports.json
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Ignore Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+venv/
+
+# Ignore 3D/ML artifacts
+*.ply
+*.obj
+*.stl.bak
+colmap_db/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE
+.vscode/
+.idea/
+*.vs
+
+# Ignore environment files
+*.env
+*.env.local
+
+# Ignore uploads (Phase 1+)
+scans/
+uploads/
+
+# Ignore node_modules (if JS creeps in)
+node_modules/

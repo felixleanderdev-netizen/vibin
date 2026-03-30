@@ -1,0 +1,6 @@
+@FormFittingPrints.API_HostAddress = http://localhost:5216
+
+GET {{FormFittingPrints.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
