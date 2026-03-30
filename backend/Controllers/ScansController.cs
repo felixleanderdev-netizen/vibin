@@ -168,6 +168,18 @@ public class ScansController : ControllerBase
         return Ok(measurements);
     }
 
+    [HttpGet("{sessionId}/measurements/history")]
+    public async Task<ActionResult<List<MeasurementResult>>> GetMeasurementHistory(string sessionId)
+    {
+        var history = await _reconstructionService.GetMeasurementHistoryAsync(sessionId);
+        if (history == null || history.Count == 0)
+        {
+            return NotFound(new { sessionId, message = "No measurement history available" });
+        }
+
+        return Ok(history);
+    }
+
     /// <summary>
     /// Health check endpoint.
     /// </summary>

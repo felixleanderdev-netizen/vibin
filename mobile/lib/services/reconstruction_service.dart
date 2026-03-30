@@ -44,6 +44,21 @@ class ReconstructionService {
     }
   }
 
+  Future<List<MeasurementResult>> getMeasurementHistory(String sessionId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/scans/$sessionId/measurements/history'),
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as List<dynamic>;
+      return json.map((item) => MeasurementResult.fromJson(item as Map<String, dynamic>)).toList();
+    } else if (response.statusCode == 404) {
+      return [];
+    } else {
+      throw Exception('Failed to get measurement history: ${response.statusCode}');
+    }
+  }
+
   /// Download the 3D model file
   Future<String> downloadModel(String sessionId) async {
     final response = await http.get(

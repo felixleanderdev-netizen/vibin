@@ -184,6 +184,21 @@ public class ReconstructionService
             var measurementFile = GetMeasurementFilePath(sessionId);
             File.WriteAllText(measurementFile, System.Text.Json.JsonSerializer.Serialize(measurement, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
 
+            // Append to measurement history
+            var historyFile = GetMeasurementHistoryFilePath(sessionId);
+            var history = new List<MeasurementResult>();
+            if (File.Exists(historyFile))
+            {
+                var historyJson = await File.ReadAllTextAsync(historyFile);
+                var existingHistory = System.Text.Json.JsonSerializer.Deserialize<List<MeasurementResult>>(historyJson);
+                if (existingHistory != null)
+                {
+                    history = existingHistory;
+                }
+            }
+            history.Add(measurement);
+            await File.WriteAllTextAsync(historyFile, System.Text.Json.JsonSerializer.Serialize(history, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+
             return status;
         }
         catch (Exception ex)
@@ -197,15 +212,26 @@ public class ReconstructionService
         }
     }
 
-    public Task<MeasurementResult?> GetMeasurementResultAsync(string sessionId)
+    public async Task<MeasurementResult?> GetMeasurementResultAsync(string sessionId)
     {
         var measurementFile = GetMeasurementFilePath(sessionId);
         if (!File.Exists(measurementFile))
-            return Task.FromResult<MeasurementResult?>(null);
+            return null;
 
-        var json = File.ReadAllText(measurementFile);
+        var json = await File.ReadAllTextAsync(measurementFile);
         var measurement = System.Text.Json.JsonSerializer.Deserialize<MeasurementResult>(json);
-        return Task.FromResult(measurement);
+        return measurement;
+    }
+
+    public async Task<List<MeasurementResult>> GetMeasurementHistoryAsync(string sessionId)
+    {
+        var historyFile = GetMeasurementHistoryFilePath(sessionId);
+        if (!File.Exists(historyFile))
+            return new List<MeasurementResult>();
+
+        var json = await File.ReadAllTextAsync(historyFile);
+        var history = System.Text.Json.JsonSerializer.Deserialize<List<MeasurementResult>>(json);
+        return history ?? new List<MeasurementResult>();
     }
 
     public string GetSessionDirectory(string sessionId)
@@ -229,6 +255,11 @@ public class ReconstructionService
     private string GetMeasurementFilePath(string sessionId)
     {
         return Path.Combine(GetSessionDirectory(sessionId), "measurements.json");
+    }
+
+    private string GetMeasurementHistoryFilePath(string sessionId)
+    {
+        return Path.Combine(GetSessionDirectory(sessionId), "measurements_history.json");
     }
 
     private async Task SaveStatusAsync(string sessionId, ReconstructionStatus status)

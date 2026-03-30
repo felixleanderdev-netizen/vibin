@@ -22,6 +22,7 @@ class _ReconstructionStatusScreenState extends State<ReconstructionStatusScreen>
   MeasurementResult? _measurements;
   Timer? _pollTimer;
   String? _errorMessage;
+  bool _isReconstructionTriggered = false;
 
   @override
   void initState() {
@@ -51,10 +52,42 @@ class _ReconstructionStatusScreenState extends State<ReconstructionStatusScreen>
         _errorMessage = null;
       });
 
+      if (status.status == 'not_started' && !_isReconstructionTriggered) {
+        _isReconstructionTriggered = true;
+        try {
+          await _service.startReconstruction(widget.sessionId);
+          setState(() {
+            _status = ReconstructionStatus(
+              sessionId: widget.sessionId,
+              status: 'processing',
+              updatedAt: DateTime.now(),
+              message: 'Reconstruction started',
+            );
+          });
+        } catch (ex) {
+          _pollTimer?.cancel();
+          setState(() {
+            _status = ReconstructionStatus(
+              sessionId: widget.sessionId,
+              status: 'failed',
+              updatedAt: DateTime.now(),
+              message: 'Failed to start reconstruction: $ex',
+            );
+            _errorMessage = null;
+          });
+          return;
+        }
+      }
+
       // If completed, get measurements and stop polling
       if (status.isComplete) {
         _pollTimer?.cancel();
         await _loadMeasurements();
+      }
+
+      // If failed, stop polling (user can retry by returning)
+      if (status.isFailed) {
+        _pollTimer?.cancel();
       }
     } catch (e) {
       setState(() {
