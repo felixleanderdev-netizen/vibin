@@ -155,7 +155,6 @@ The following are in place for camera implementation:
 
 ✅ **Permissions**: Both platforms ready  
 ✅ **Folder structure**: All directories exist  
-✅ **Navigation**: Routes defined, transitions tested (will work with placeholders)  
 ✅ **State management**: Provider fully set up  
 ✅ **Backend client**: UploadService ready (Task 1.4 integration)  
 ✅ **UI skeleton**: CameraScreen ready for camera_package integration  
@@ -170,7 +169,6 @@ The following are in place for camera implementation:
 
 ---
 
-## Testing Readiness
 
 **Before Task 1.3**:
 - Navigate between screens ✅
@@ -181,7 +179,6 @@ The following are in place for camera implementation:
 **After Task 1.3**:
 - Capture images on simulator/device
 - Verify image counting + progress bar
-- Test on iOS simulator + Android emulator
 - Validate file storage in temp directory
 
 ---
@@ -191,7 +188,6 @@ The following are in place for camera implementation:
 - Camera preview is placeholder (black container)
 - Capture button doesn't take real photos
 - No actual image files created (until camera_package integration)
-- Upload is mock (will be tested in Task 1.4)
 - Guidance text is static (will be dynamic in Task 1.3)
 
 ---
@@ -206,7 +202,6 @@ The following are in place for camera implementation:
 ✅ **Reusability**:
 - CameraService is singleton → can be used anywhere
 - UploadService is singleton → can be used anywhere
-- Models are simple data classes → easy to test
 
 ✅ **Error Handling**:
 - Try/catch in services
@@ -227,13 +222,13 @@ The following are in place for camera implementation:
 2. Build CameraPreview widget on CameraScreen
 3. Implement capture logic + file saving
 4. Add guidance text choreography
-5. Test on simulators
 
 **Task 1.4**: Mobile ↔ Backend integration
 1. Implement real image upload (use UploadService)
-2. Test POST /api/scans/upload endpoint
 3. Verify multipart form data handling
 
 ---
 
 **Status**: ✅ Ready for Task 1.3
+
+> NOTE: Testing will not be implemented in this project.

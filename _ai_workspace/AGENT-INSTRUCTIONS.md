@@ -20,7 +20,6 @@
 - Clear task descriptions
 - What's being built (deliverables)
 - Dependencies between tasks
-- Success criteria + acceptance tests
 - Complexity level (conceptual, not time-based)
 - Risks and constraints
 - Technical details and requirements
@@ -41,7 +40,6 @@
 
 **Success Criteria**:
 - Builds without errors
-- All tests pass
 - Meets specifications in docs/...
 ```
 
@@ -80,3 +78,5 @@ After each task completion, verify the AI workspace state:
 
 **Last Updated**: 2026-03-30  
 **Added By**: GitHub Copilot (Claude Haiku 4.5)
+
+> NOTE: Testing will not be implemented in this project.

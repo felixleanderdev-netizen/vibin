@@ -197,7 +197,6 @@ Camera → takePicture() → File
 - `providers/scan_session_provider.dart` - Session state
 - `providers/guidance_provider.dart` - Guidance text management
 
-## Testing Checklist (Ready for Task 1.4)
 
 ### Camera Functionality
 - [ ] Camera preview displays live feed
@@ -248,7 +247,6 @@ Camera → takePicture() → File
    - Store in session directory
    - Return success response with session ID
 
-2. **Integration Testing** - Verify end-to-end flow
    - Scan images on mobile
    - Upload to running backend
    - Verify storage on disk
@@ -271,3 +269,5 @@ Camera → takePicture() → File
 
 ## Status
 🟢 **COMPLETE** - Camera capture UI fully functional and integrated with state management
+
+> NOTE: Testing will not be implemented in this project.

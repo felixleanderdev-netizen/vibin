@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.IO;
 using FormFittingPrints.API.Models;
 using FormFittingPrints.API.Services;
 
@@ -9,11 +10,16 @@ namespace FormFittingPrints.API.Controllers;
 public class ScansController : ControllerBase
 {
     private readonly ScanStorageService _storageService;
+    private readonly ReconstructionService _reconstructionService;
     private readonly ILogger<ScansController> _logger;
 
-    public ScansController(ScanStorageService storageService, ILogger<ScansController> logger)
+    public ScansController(
+        ScanStorageService storageService,
+        ReconstructionService reconstructionService,
+        ILogger<ScansController> logger)
     {
         _storageService = storageService;
+        _reconstructionService = reconstructionService;
         _logger = logger;
     }
 
@@ -108,6 +114,58 @@ public class ScansController : ControllerBase
                 }
             );
         }
+    }
+
+    [HttpPost("{sessionId}/reconstruct")]
+    public async Task<ActionResult<ReconstructionStatus>> StartReconstruction(string sessionId)
+    {
+        try
+        {
+            var status = await _reconstructionService.StartReconstructionAsync(sessionId);
+            if (status.Status == "failed")
+            {
+                return StatusCode(500, status);
+            }
+
+            return Ok(status);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Reconstruction start failed for {SessionId}", sessionId);
+            return StatusCode(500, new { sessionId, status = "failed", message = ex.Message });
+        }
+    }
+
+    [HttpGet("{sessionId}/reconstruct/status")]
+    public async Task<ActionResult<ReconstructionStatus>> GetReconstructionStatus(string sessionId)
+    {
+        var status = await _reconstructionService.GetStatusAsync(sessionId);
+        return Ok(status);
+    }
+
+    [HttpGet("{sessionId}/reconstruct/model")]
+    public async Task<IActionResult> DownloadReconstructionModel(string sessionId)
+    {
+        var status = await _reconstructionService.GetStatusAsync(sessionId);
+        if (status?.Status != "succeeded" || string.IsNullOrEmpty(status.ModelPath) || !System.IO.File.Exists(status.ModelPath))
+        {
+            return NotFound(new { sessionId, message = "Reconstructed model not available" });
+        }
+
+        var fileBytes = await System.IO.File.ReadAllBytesAsync(status.ModelPath);
+        return File(fileBytes, "application/octet-stream", Path.GetFileName(status.ModelPath));
+    }
+
+    [HttpGet("{sessionId}/measurements")]
+    public async Task<ActionResult<MeasurementResult>> GetMeasurements(string sessionId)
+    {
+        var measurements = await _reconstructionService.GetMeasurementResultAsync(sessionId);
+        if (measurements == null)
+        {
+            return NotFound(new { sessionId, message = "Measurements not available" });
+        }
+
+        return Ok(measurements);
     }
 
     /// <summary>

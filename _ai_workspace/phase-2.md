@@ -73,10 +73,8 @@
   - Shows final measurement summary
 - [ ] Add estimated reconstruction + measurement KPI to phase 1 screen
 
-### Task 2.8: Test harness
 - [ ] sample images (folder + known expected measurements)
 - [ ] script to run endpoint flow and verify response
-- [ ] performance test for 50-image input
 - [ ] baseline measure accuracy with ground truth
 
 ### Task 2.9: Phase 2 docs (done by this file)
@@ -100,3 +98,5 @@
 - Keep Phase 1 API stable; add extension endpoints with versioning `/api/v2/...` if needed.
 - Start with local filesystem storage; migrate to S3 / object store in Phase 2.2.
 - Use edge-case handling for mobile images where user takes too few frames.
+
+> NOTE: Testing will not be implemented in this project.

@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddScoped<ScanStorageService>();
+builder.Services.AddScoped<ReconstructionService>();
 builder.Services.AddLogging();
 builder.Services.AddOpenApi();
 

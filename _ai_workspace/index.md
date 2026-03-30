@@ -124,17 +124,14 @@ formFittingPrints/
 
 ## 🚀 Next Steps
 
-1. **Create Phase 1 task board** (camera setup, image upload pipeline, test harness)
 2. **Prepare template file** (locate/verify user's `.stl` files for collar, armband, armor)
 3. **Build minimal viable flow** (capture images → Colmap reconstruction → STL output)
 4. **Set up C# backend scaffold** (ASP.NET Core project, POST `/upload` endpoint)
-5. **Validate on real device** (test cross-device image quality + Colmap tuning)
 
 ---
 
 ## 📝 Notes & Observations
 
-- Photogrammetry is **highest-risk** component; prototype early with test photos
 - Cross-device image handling requires careful API design + validation
 - Colmap has memory overhead → consider GPU acceleration or server-side queuing
 - AR preview needs body pose from Phase 2— coordinate systems must align
@@ -152,3 +149,5 @@ formFittingPrints/
 - Reference this workspace in commit messages: `[_ai_workspace] phase-X update`
 
 ---
+
+> NOTE: Testing will not be implemented in this project.

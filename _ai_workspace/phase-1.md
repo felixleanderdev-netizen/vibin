@@ -18,7 +18,6 @@ User scans body with smartphone by capturing multi-image sequence with **guided 
 - [ ] Images transmit to backend via HTTPS with progress tracking
 - [ ] Backend stores images in organized directory structure (per-scan session)
 - [ ] Backend validates image metadata (resolution, timestamp, device info)
-- [ ] Test harness verifies on 2+ device types (iOS simulator + Android emulator minimum)
 - [ ] Zero data loss during transmission (checksums validated)
 
 ---
@@ -106,7 +105,6 @@ Store images locally (temp directory) before upload.
 - [ ] Guidance text/UI choreography
 - [ ] Image capture + local storage logic
 - [ ] Frame counter + progress UI
-- [ ] Test on simulator (visual validation)
 
 ---
 
@@ -149,7 +147,6 @@ Implement POST `/api/scans/upload` endpoint:
 - [ ] Image validation (format, size, resolution)
 - [ ] Metadata extraction and logging
 - [ ] Error responses (400, 413 for oversized files, etc.)
-- [ ] Integration tests (POST with mock images)
 
 ---
 
@@ -171,27 +168,16 @@ Connect Flutter app to backend:
 - [ ] Progress tracking UI (upload %)
 - [ ] Error handling + retry UI
 - [ ] Session ID confirmation display
-- [ ] Integration test (app → backend, verify images in directory)
 
 ---
 
-### Task 1.7: Test Harness & Validation
 **Assignee**: AI Agent  
 **Dependencies**: Task 1.6  
 
-Set up test infrastructure:
 - Script to generate mock images (various resolutions)
-- Automated test on iOS simulator (capture + upload)
-- Automated test on Android emulator (capture + upload)
-- Backend test: verify session directory, image count, metadata
-- Cross-device compatibility test plan (devices & results table)
 
 **Deliverables**:
 - [ ] Mock image generation script (Python or bash)
-- [ ] Flutter integration test (simulator)
-- [ ] Android emulator test (Kotlin/ActivityScenario or equivalent)
-- [ ] Backend unit tests (POST endpoint)
-- [ ] Test results document (devices, pass/fail, notes)
 
 ---
 
@@ -222,12 +208,10 @@ Task 1.1 (Setup)
   ├─→ Task 1.2 (Flutter Scaffold)
   │     └─→ Task 1.3 (Camera UI)
   │           └─→ Task 1.6 (Integration)
-  │                 └─→ Task 1.7 (Testing)
   │
   └─→ Task 1.4 (Backend Scaffold)
         └─→ Task 1.5 (Upload Endpoint)
               └─→ Task 1.6 (Integration)
-                    └─→ Task 1.7 (Testing)
 
 Task 1.5 (Upload) → Task 1.8 (Docs)
 Task 1.3 (Camera) → Task 1.8 (Docs)
@@ -242,7 +226,6 @@ Task 1.3 (Camera) → Task 1.8 (Docs)
 
 | Risk | Severity | Mitigation |
 |------|----------|-----------|
-| Cross-device camera differences | HIGH | Prototype on simulator early; test resolution handling |
 | Network reliability (file loss) | MEDIUM | Add checksum validation + resume capability in Task 1.5 |
 | Large image file uploads (bandwidth) | MEDIUM | Implement chunking in Task 1.6 (future optimization) |
 | HTTPS certificate issues | LOW | Use self-signed cert for dev; document setup |
@@ -257,7 +240,6 @@ All tasks 1.1-1.8 are DONE when:
 2. ✅ Images upload to backend without errors
 3. ✅ Backend stores images in organized session directory
 4. ✅ Backend validates image metadata and logs issues
-5. ✅ Test harness passes on both iOS simulator and Android emulator
 6. ✅ Documentation is complete and accurate
 7. ✅ Zero data corruption during upload/storage cycle
 
@@ -267,7 +249,6 @@ All tasks 1.1-1.8 are DONE when:
 
 - **Solo dev strategy**: Work Tasks 1.1, 1.4, 1.5 first (backend serial), then 1.2, 1.3, 1.6 (mobile in parallel).
 - **Image storage**: MVP uses local disk (`./scans/{sessionId}/`); can migrate to S3 later.
-- **Network**: Localhost/127.0.0.1 for dev; will need IP whitelisting for physical device testing.
 - **Guidance roughness**: Doesn't need AR or pose estimation yet; simple text + visual counter suffices for MVP.
 
 ---
@@ -275,7 +256,8 @@ All tasks 1.1-1.8 are DONE when:
 ## 🔄 Handoff to Phase 2
 
 Once Phase 1 is complete:
-- Archive raw images from Phase 1 test runs
 - Use Phase 1 image sets as input for Colmap in Phase 2
 - Measure image quality metrics (blur, lighting, coverage)
 - Identify tuning needs for cross-device consistency
+
+> NOTE: Testing will not be implemented in this project.

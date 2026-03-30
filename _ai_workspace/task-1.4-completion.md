@@ -162,15 +162,10 @@ Marker scan loop:
 - Exact dimension information
 - Supports all common JPEG/PNG variants
 
-### 7. **Testing Readiness**
 
-#### Unit Test Coverage Ready
 - Image validation logic is isolated in service
-- Header parsing can be tested with sample JPEG/PNG files
-- File storage operations are testable
 - Logging can be captured for assertion
 
-#### Integration Test Scenarios
 1. Upload valid JPEG → Success
 2. Upload valid PNG → Success
 3. Upload oversized file → 413 response
@@ -259,9 +254,7 @@ backend/
 
 1. **Connect Flutter Upload Service**
    - Update `UploadService.dart` to point to running backend
-   - Test multipart request format matches expected endpoint
 
-2. **End-to-End Testing**
    - Capture images on simulator
    - Upload to local backend server
    - Verify images stored in `./scans/{sessionId}/`
@@ -292,4 +285,5 @@ backend/
 ## Status
 🟢 **COMPLETE** - Backend upload endpoint fully functional with comprehensive validation
 
-**Ready for:** Task 1.5 - Mobile → Backend Integration Testing
+
+> NOTE: Testing will not be implemented in this project.

@@ -140,7 +140,6 @@ Mobile receives and parses response
 UploadSummaryScreen shows success dialog
 ```
 
-### 4. **Integration Testing Scenarios**
 
 #### Scenario 1: Happy Path (Success)
 **Steps:**
@@ -174,7 +173,6 @@ UploadSummaryScreen shows success dialog
 **Setup:** Backend configured, but file exceeds 100 MB
 
 **Steps:**
-1. Prepare malicious test uploading 150 MB file
 2. Backend receives request
 
 **Expected Result:**
@@ -206,10 +204,8 @@ UploadSummaryScreen shows success dialog
 
 ### 5. **Environment Configuration**
 
-#### Development (Local Testing)
 ```dart
 _backendHost = 'localhost:5001'  // HTTP protocol automatically selected
-_uploadTimeout = 5 minutes       // Generous for local testing
 ```
 
 #### Production (Future)
@@ -271,7 +267,6 @@ Upload succeeded: sessionId={id}, images=50
 - Upload completion: session ID, image count received
 - Errors: detailed exception messages
 
-### 9. **Testing Instructions**
 
 #### Local Development Setup
 
@@ -290,7 +285,6 @@ flutter run
 # OR: Launch on iOS simulator / Android emulator in IDE
 ```
 
-**Step 3: Test Workflow**
 1. App starts → WelcomeScreen
 2. Tap "Start Scanning" → CameraScreen
 3. Capture images (50 recommended)
@@ -314,9 +308,7 @@ ls -la backend/scans/{sessionId}/
 - **Android Emulator**: May need host IP instead of localhost
   - Alternative: Use `10.0.2.2:5001` on Android emulator
 
-#### Mock Testing (No Backend)
 - Modify UploadService to return mock UploadResponse
-- Test UI flow without server dependency
 
 ### 10. **Files Modified**
 
@@ -401,3 +393,5 @@ ls -la backend/scans/{sessionId}/
 🟢 **COMPLETE** - Full mobile ↔ backend integration working end-to-end
 
 **Ready for:** Phase 2 - 3D Reconstruction Pipeline
+
+> NOTE: Testing will not be implemented in this project.
