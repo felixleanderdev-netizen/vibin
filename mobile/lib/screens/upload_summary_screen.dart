@@ -13,6 +13,7 @@ class UploadSummaryScreen extends StatefulWidget {
 class _UploadSummaryScreenState extends State<UploadSummaryScreen> {
   bool _isUploading = false;
   String? _errorMessage;
+  int _uploadProgress = 0; // 0-100
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +57,7 @@ class _UploadSummaryScreenState extends State<UploadSummaryScreen> {
                         const SizedBox(height: 12),
                         _buildSummaryRow(
                           'Status',
-                          provider.status,
+                          provider.status.toUpperCase(),
                           statusColor: _getStatusColor(provider.status),
                         ),
                         const SizedBox(height: 12),
@@ -86,9 +87,22 @@ class _UploadSummaryScreenState extends State<UploadSummaryScreen> {
                         border: Border.all(color: Colors.red),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(
-                        'Error: $_errorMessage',
-                        style: const TextStyle(color: Colors.red),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Upload Error',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.red, fontSize: 13),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -105,6 +119,7 @@ class _UploadSummaryScreenState extends State<UploadSummaryScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
+                        disabledBackgroundColor: Colors.grey,
                       ),
                     ),
                   ),
@@ -120,12 +135,57 @@ class _UploadSummaryScreenState extends State<UploadSummaryScreen> {
                   ),
                 ] else ...[
                   // Upload in progress
-                  const Center(
-                    child: CircularProgressIndicator(),
+                  Card(
+                    elevation: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          const CircularProgressIndicator(),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Uploading images...',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: LinearProgressIndicator(
+                              value: _uploadProgress / 100,
+                              minHeight: 8,
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Colors.green,
+                              ),
+                              backgroundColor: Colors.grey[300],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            '$_uploadProgress%',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  const Center(
-                    child: Text('Uploading images...'),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Please keep your app open during the upload. '
+                      'This may take a few minutes depending on your connection.',
+                      style: TextStyle(fontSize: 13, color: Colors.blue),
+                    ),
                   ),
                 ],
 
@@ -140,7 +200,7 @@ class _UploadSummaryScreenState extends State<UploadSummaryScreen> {
                   ),
                   child: const Text(
                     'Your scan images will be processed to extract body measurements. '
-                    'This typically takes a few minutes. You will be able to preview '
+                    'Processing typically takes a few minutes. You will be able to preview '
                     'the fitted object once processing is complete.',
                     style: TextStyle(fontSize: 13),
                   ),
@@ -187,6 +247,8 @@ class _UploadSummaryScreenState extends State<UploadSummaryScreen> {
 
   Color _getStatusColor(String status) {
     switch (status) {
+      case 'pending':
+        return Colors.orange;
       case 'capturing':
         return Colors.orange;
       case 'uploading':
@@ -207,34 +269,52 @@ class _UploadSummaryScreenState extends State<UploadSummaryScreen> {
     setState(() {
       _isUploading = true;
       _errorMessage = null;
+      _uploadProgress = 0;
     });
 
     try {
+      // Simulate progress updates (in real app, upload service would callback)
+      _simulateProgress();
+
       final response = await provider.uploadScan();
 
       if (!mounted) return;
 
       if (response.isSuccess) {
+        setState(() {
+          _uploadProgress = 100;
+          _isUploading = false;
+        });
+
         // Show success dialog
+        if (!mounted) return;
         showDialog(
           context: context,
           barrierDismissible: false,
           builder: (context) => AlertDialog(
-            title: const Text('Upload Successful'),
+            title: const Text('Upload Successful! ✓'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Session ID: ${response.sessionId}'),
-                const SizedBox(height: 8),
-                Text('Images received: ${response.imagesReceived}'),
+                Text(
+                  'Your scan has been successfully uploaded.',
+                  style: TextStyle(color: Colors.grey[700]),
+                ),
+                const SizedBox(height: 16),
+                _buildSessionInfo('Session ID', response.sessionId),
+                const SizedBox(height: 12),
+                _buildSessionInfo(
+                  'Images Received',
+                  '${response.imagesReceived} images',
+                ),
               ],
             ),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.pop(context); // Close dialog
-                  Navigator.pop(context); // Go back to first screen
+                  Navigator.pop(context); // Go back to camera
                   Navigator.pop(context); // Go back to welcome
                 },
                 child: const Text('Done'),
@@ -244,15 +324,62 @@ class _UploadSummaryScreenState extends State<UploadSummaryScreen> {
         );
       } else {
         setState(() {
-          _errorMessage = response.message ?? 'Upload failed';
+          _errorMessage = response.message ?? 'Upload failed with no error message';
           _isUploading = false;
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString();
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
         _isUploading = false;
       });
     }
+  }
+
+  Widget _buildSessionInfo(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'monospace',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _simulateProgress() {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted || !_isUploading) return;
+      setState(() => _uploadProgress = 25);
+    });
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!mounted || !_isUploading) return;
+      setState(() => _uploadProgress = 50);
+    });
+    Future.delayed(const Duration(milliseconds: 3000), () {
+      if (!mounted || !_isUploading) return;
+      setState(() => _uploadProgress = 75);
+    });
   }
 }
