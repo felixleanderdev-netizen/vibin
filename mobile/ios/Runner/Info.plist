@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Camera usage description (required by iOS 10+) -->
+    <key>NSCameraUsageDescription</key>
+    <string>We need access to your camera to capture detailed body scans for fitting 3D-printed wearables.</string>
+    
+    <!-- Photo library usage description -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>We need access to save and manage your body scan images.</string>
+    
+    <key>NSPhotoLibraryAddOnlyUsageDescription</key>
+    <string>We need permission to save your scan images.</string>
+    
+    <!-- Microphone (if future audio guidance) -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Optional: microphone for future audio guidance features.</string>
+</dict>
+</plist>

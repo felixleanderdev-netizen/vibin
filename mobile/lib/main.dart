@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/scan_session_provider.dart';
+import 'screens/welcome_screen.dart';
+import 'screens/camera_screen.dart';
+import 'screens/upload_summary_screen.dart';
 
 void main() {
   runApp(const FormFittingPrintsApp());
@@ -9,57 +14,31 @@ class FormFittingPrintsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Form-Fitting Prints',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      home: const ScanningHomePage(title: 'Body Scanner'),
-    );
-  }
-}
-
-class ScanningHomePage extends StatefulWidget {
-  const ScanningHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
-
-  @override
-  State<ScanningHomePage> createState() => _ScanningHomePageState();
-}
-
-class _ScanningHomePageState extends State<ScanningHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'Form-Fitting Prints - Phase 1',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Scanning pipeline (placeholder)',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Camera feature coming in Phase 1')),
-                );
-              },
-              child: const Text('Start Scanning'),
-            ),
-          ],
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ScanSessionProvider()),
+      ],
+      child: MaterialApp(
+        title: 'Form-Fitting Prints',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          useMaterial3: true,
+          appBarTheme: const AppBarTheme(
+            elevation: 0,
+            centerTitle: false,
+          ),
         ),
+        home: const WelcomeScreen(),
+        routes: {
+          '/camera': (context) => const CameraScreen(),
+          '/upload_summary': (context) => const UploadSummaryScreen(),
+        },
+        onGenerateRoute: (settings) {
+          // Fallback route
+          return MaterialPageRoute(
+            builder: (context) => const WelcomeScreen(),
+          );
+        },
       ),
     );
   }
