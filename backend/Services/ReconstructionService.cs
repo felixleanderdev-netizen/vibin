@@ -2,6 +2,8 @@ namespace FormFittingPrints.API.Services;
 
 using FormFittingPrints.API.Models;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using System.Linq;
 
 public class ReconstructionService
 {
@@ -70,16 +72,41 @@ public class ReconstructionService
             return status;
         }
 
-        // TODO: Call Colmap and 3D pipeline here instead of dummy simulation.
-        // Simulated work for Phase 2 scaffolding.
+        // Run Colmap reconstruction pipeline
         try
         {
-            await Task.Delay(2000); // placeholder for pipeline runtime
+            var reconDir = GetSessionDirectory(sessionId);
+            var databasePath = Path.Combine(reconDir, "database.db");
+            var sparseDir = Path.Combine(reconDir, "sparse");
+            var outputModel = Path.Combine(reconDir, "model.ply");
 
-            var reconFolder = GetSessionDirectory(sessionId);
-            var outputModel = Path.Combine(reconFolder, "model.ply");
+            // Step 1: Feature extraction
+            status.Message = "Extracting features from images...";
+            await SaveStatusAsync(sessionId, status);
+            await RunColmapCommand("feature_extractor", $"--database_path {databasePath} --image_path {scanDir}");
 
-            File.WriteAllText(outputModel, "ply\nformat ascii 1.0\nend_header\n");
+            // Step 2: Feature matching
+            status.Message = "Matching features...";
+            await SaveStatusAsync(sessionId, status);
+            await RunColmapCommand("exhaustive_matcher", $"--database_path {databasePath}");
+
+            // Step 3: Sparse reconstruction
+            status.Message = "Performing sparse reconstruction...";
+            await SaveStatusAsync(sessionId, status);
+            await RunColmapCommand("mapper", $"--database_path {databasePath} --image_path {scanDir} --output_path {sparseDir}");
+
+            // Step 4: Convert to PLY
+            status.Message = "Converting model to PLY...";
+            await SaveStatusAsync(sessionId, status);
+            var sparseModelDir = Directory.GetDirectories(sparseDir).FirstOrDefault();
+            if (sparseModelDir != null)
+            {
+                await RunColmapCommand("model_converter", $"--input_path {sparseModelDir} --output_path {outputModel} --output_type PLY");
+            }
+            else
+            {
+                throw new Exception("No sparse model directory found.");
+            }
 
             status.Status = "succeeded";
             status.UpdatedAt = DateTime.UtcNow;
@@ -154,5 +181,34 @@ public class ReconstructionService
         var statusFile = GetStatusFilePath(sessionId);
         var json = System.Text.Json.JsonSerializer.Serialize(status, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(statusFile, json);
+    }
+
+    private async Task RunColmapCommand(string command, string arguments)
+    {
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "colmap",
+                Arguments = $"{command} {arguments}",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+
+        _logger.LogInformation("Running colmap {Command} {Arguments}", command, arguments);
+
+        process.Start();
+        await process.WaitForExitAsync();
+
+        if (process.ExitCode != 0)
+        {
+            var error = await process.StandardError.ReadToEndAsync();
+            throw new Exception($"Colmap {command} failed: {error}");
+        }
+
+        _logger.LogInformation("Colmap {Command} completed successfully", command);
     }
 }
