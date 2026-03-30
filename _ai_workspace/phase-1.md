@@ -1,8 +1,7 @@
 # Phase 1: Scanning Pipeline
 
 **Goal**: Mobile app captures images → server receives safely  
-**Status**: Planning  
-**Est. Duration**: 2-3 weeks (solo dev)
+**Status**: Planning
 
 ---
 
@@ -28,7 +27,6 @@ User scans body with smartphone by capturing multi-image sequence with **guided 
 
 ### Task 1.1: Project Setup & Structure
 **Assignee**: AI Agent  
-**Effort**: Low (2 hours)  
 **Dependencies**: None  
 
 Create workspace directories:
@@ -50,7 +48,6 @@ formFittingPrints/
 
 ### Task 1.2: Flutter Mobile App Scaffold ✅ COMPLETE
 **Assignee**: AI Agent  
-**Effort**: Medium (4-6 hours) — **Actual: 2 hours**  
 **Dependencies**: Task 1.1 ✅  
 **Status**: DONE
 
@@ -92,7 +89,6 @@ Initialize Flutter project with dependencies:
 
 ### Task 1.3: Camera Capture UI with Guidance
 **Assignee**: AI Agent  
-**Effort**: Medium-High (6-8 hours)  
 **Dependencies**: Task 1.2  
 
 Implement guided scanning flow:
@@ -116,7 +112,6 @@ Store images locally (temp directory) before upload.
 
 ### Task 1.4: C# ASP.NET Core Backend Scaffold
 **Assignee**: AI Agent  
-**Effort**: Medium (4-6 hours)  
 **Dependencies**: Task 1.1  
 
 Initialize ASP.NET Core API project:
@@ -137,7 +132,6 @@ Initialize ASP.NET Core API project:
 
 ### Task 1.5: `/upload` Endpoint Implementation
 **Assignee**: AI Agent  
-**Effort**: Medium (5-7 hours)  
 **Dependencies**: Task 1.4  
 
 Implement POST `/api/scans/upload` endpoint:
@@ -161,7 +155,6 @@ Implement POST `/api/scans/upload` endpoint:
 
 ### Task 1.6: Mobile → Backend Integration
 **Assignee**: AI Agent  
-**Effort**: Medium (4-6 hours)  
 **Dependencies**: Task 1.3 + Task 1.5  
 
 Connect Flutter app to backend:
@@ -184,7 +177,6 @@ Connect Flutter app to backend:
 
 ### Task 1.7: Test Harness & Validation
 **Assignee**: AI Agent  
-**Effort**: Medium-High (6-8 hours)  
 **Dependencies**: Task 1.6  
 
 Set up test infrastructure:
@@ -205,7 +197,6 @@ Set up test infrastructure:
 
 ### Task 1.8: Documentation & API Spec
 **Assignee**: AI Agent  
-**Effort**: Low (2-3 hours)  
 **Dependencies**: Task 1.5  
 
 Create documentation:

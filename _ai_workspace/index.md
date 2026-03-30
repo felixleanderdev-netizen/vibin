@@ -98,32 +98,27 @@ formFittingPrints/
 **Goal**: Mobile app captures images → server receives safely  
 **Inputs**: —  
 **Outputs**: iOS + Android app, `/upload` endpoint  
-**Effort**: Medium  
 
 ### Phase 2: 3D Reconstruction (CRITICAL PATH)
 **Goal**: Image sequence → 3D mesh  
 **Inputs**: Raw images from Phase 1  
 **Outputs**: Point cloud + mesh (`.obj` / `.ply`)  
-**Effort**: **HIGH** (Colmap tuning, memory management)  
 **Risk**: Cross-device image quality variance  
 
 ### Phase 3: Measurement Extraction
 **Goal**: 3D mesh → body girth measurements  
 **Inputs**: Mesh from Phase 2 + auto-isolated body segmentation  
 **Outputs**: Measurement struct (JSON: arm girth, leg girth, neck girth)  
-**Effort**: Medium  
 
 ### Phase 4: Object Fitting
 **Goal**: Load template → scale/position to measurements  
 **Inputs**: Measurements + template STL  
 **Outputs**: Fitted STL + placement transform  
-**Effort**: Low  
 
 ### Phase 5: AR Preview
 **Goal**: Render fitted object on body in real-time  
 **Inputs**: Fitted model + live device camera feed  
 **Outputs**: ARCore/ARKit integration  
-**Effort**: Medium  
 
 ---
 
