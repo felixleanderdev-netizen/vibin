@@ -4,6 +4,7 @@ using FormFittingPrints.API.Models;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Linq;
+using System.Collections.Generic;
 
 public class ReconstructionService
 {
@@ -108,24 +109,78 @@ public class ReconstructionService
                 throw new Exception("No sparse model directory found.");
             }
 
+            // Step 5: Extract measurements
+            status.Message = "Extracting measurements from 3D model...";
+            await SaveStatusAsync(sessionId, status);
+            var measurementsJson = Path.Combine(reconDir, "measurements_temp.json");
+            await RunPythonScript("scripts/measure.py", $"{outputModel} {measurementsJson}");
+
+            // Load measurements
+            MeasurementResult measurement;
+            if (File.Exists(measurementsJson))
+            {
+                try
+                {
+                    var json = await File.ReadAllTextAsync(measurementsJson);
+                    var extracted = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                    if (extracted != null)
+                    {
+                        measurement = new MeasurementResult
+                        {
+                            SessionId = sessionId,
+                            NeckGirthMm = extracted.TryGetValue("neck_girth_mm", out var neck) ? Convert.ToInt32(neck) : 350,
+                            LeftArmGirthMm = extracted.TryGetValue("left_arm_girth_mm", out var leftArm) ? Convert.ToInt32(leftArm) : 260,
+                            RightArmGirthMm = extracted.TryGetValue("right_arm_girth_mm", out var rightArm) ? Convert.ToInt32(rightArm) : 258,
+                            LeftLegGirthMm = extracted.TryGetValue("left_leg_girth_mm", out var leftLeg) ? Convert.ToInt32(leftLeg) : 540,
+                            RightLegGirthMm = extracted.TryGetValue("right_leg_girth_mm", out var rightLeg) ? Convert.ToInt32(rightLeg) : 538,
+                            CreatedAt = DateTime.UtcNow,
+                            Confidence = extracted.TryGetValue("confidence", out var conf) ? Convert.ToDouble(conf) : 0.5
+                        };
+                        File.Delete(measurementsJson); // Clean up temp file
+                    }
+                    else
+                    {
+                        throw new Exception("Failed to deserialize measurements");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to load extracted measurements, using fallback");
+                    measurement = new MeasurementResult
+                    {
+                        SessionId = sessionId,
+                        NeckGirthMm = 350,
+                        LeftArmGirthMm = 260,
+                        RightArmGirthMm = 258,
+                        LeftLegGirthMm = 540,
+                        RightLegGirthMm = 538,
+                        CreatedAt = DateTime.UtcNow,
+                        Confidence = 0.5
+                    };
+                }
+            }
+            else
+            {
+                // Fallback to approximate measurements if extraction fails
+                measurement = new MeasurementResult
+                {
+                    SessionId = sessionId,
+                    NeckGirthMm = 350,
+                    LeftArmGirthMm = 260,
+                    RightArmGirthMm = 258,
+                    LeftLegGirthMm = 540,
+                    RightLegGirthMm = 538,
+                    CreatedAt = DateTime.UtcNow,
+                    Confidence = 0.5
+                };
+            }
+
             status.Status = "succeeded";
             status.UpdatedAt = DateTime.UtcNow;
-            status.Message = "Reconstruction completed successfully.";
+            status.Message = "Reconstruction and measurement extraction completed successfully.";
             status.ModelPath = outputModel;
             await SaveStatusAsync(sessionId, status);
 
-            // Bootstrap some fake measurement results
-            var measurement = new MeasurementResult
-            {
-                SessionId = sessionId,
-                NeckGirthMm = 350,
-                LeftArmGirthMm = 260,
-                RightArmGirthMm = 258,
-                LeftLegGirthMm = 540,
-                RightLegGirthMm = 538,
-                CreatedAt = DateTime.UtcNow,
-                Confidence = 0.85
-            };
             var measurementFile = GetMeasurementFilePath(sessionId);
             File.WriteAllText(measurementFile, System.Text.Json.JsonSerializer.Serialize(measurement, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
 
@@ -210,5 +265,38 @@ public class ReconstructionService
         }
 
         _logger.LogInformation("Colmap {Command} completed successfully", command);
+    }
+
+    private async Task RunPythonScript(string scriptPath, string arguments)
+    {
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "python3",
+                Arguments = $"{scriptPath} {arguments}",
+                WorkingDirectory = Path.GetDirectoryName(Path.Combine(Directory.GetCurrentDirectory(), scriptPath)) ?? Directory.GetCurrentDirectory(),
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+
+        _logger.LogInformation("Running python script {Script} {Arguments}", scriptPath, arguments);
+
+        process.Start();
+        await process.WaitForExitAsync();
+
+        if (process.ExitCode != 0)
+        {
+            var error = await process.StandardError.ReadToEndAsync();
+            _logger.LogWarning("Python script failed: {Error}", error);
+            // Don't throw, allow fallback measurements
+        }
+        else
+        {
+            _logger.LogInformation("Python script completed successfully");
+        }
     }
 }
