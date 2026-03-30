@@ -68,6 +68,14 @@ When updating task boards, progress files, or documentation:
 3. **Focus** on what was built, not how long it took
 4. **Reference** docs/roadmaps for architecture + scope (not schedule)
 
+## Self-Verification Requirement
+
+After each task completion, verify the AI workspace state:
+- Ensure generated files are present in `_ai_workspace/` and relevant project paths
+- Confirm update of task status via `manage_todo_list`
+- Validate backend/mobile code compiles (e.g., `dotnet build`, `flutter analyze` when possible)
+- Create/append completion note in `_ai_workspace/task-<n>.completion.md`
+
 ---
 
 **Last Updated**: 2026-03-30  
