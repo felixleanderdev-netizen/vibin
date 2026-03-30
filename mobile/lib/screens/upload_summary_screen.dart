@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/scan_session_provider.dart';
+import 'reconstruction_status_screen.dart';
 
 /// Upload summary screen - shows captured images and upload status
 class UploadSummaryScreen extends StatefulWidget {
@@ -199,9 +200,10 @@ class _UploadSummaryScreenState extends State<UploadSummaryScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
-                    'Your scan images will be processed to extract body measurements. '
-                    'Processing typically takes a few minutes. You will be able to preview '
-                    'the fitted object once processing is complete.',
+                    'Your scan images will be uploaded and processed to create a 3D model '
+                    'and extract body measurements. The reconstruction process typically takes '
+                    'a few minutes. You will be able to view your measurements and download '
+                    'the 3D model once processing is complete.',
                     style: TextStyle(fontSize: 13),
                   ),
                 ),
@@ -314,10 +316,16 @@ class _UploadSummaryScreenState extends State<UploadSummaryScreen> {
               TextButton(
                 onPressed: () {
                   Navigator.pop(context); // Close dialog
-                  Navigator.pop(context); // Go back to camera
-                  Navigator.pop(context); // Go back to welcome
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ReconstructionStatusScreen(
+                        sessionId: response.sessionId,
+                      ),
+                    ),
+                  );
                 },
-                child: const Text('Done'),
+                child: const Text('View Progress'),
               ),
             ],
           ),
