@@ -114,11 +114,37 @@ class _ReconstructionStatusScreenState extends State<ReconstructionStatusScreen>
       final url = await _service.downloadModel(widget.sessionId);
       // In a real app, you'd open this URL or save the file
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Model available at: $url')),
+        SnackBar(content: Text('Point cloud available at: $url')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to download model: $e')),
+      );
+    }
+  }
+
+  Future<void> _downloadMeshStl() async {
+    try {
+      final url = await _service.downloadMeshStl(widget.sessionId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('STL mesh ready for download')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to download STL: $e')),
+      );
+    }
+  }
+
+  Future<void> _downloadMeshObj() async {
+    try {
+      final url = await _service.downloadMeshObj(widget.sessionId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('OBJ mesh ready for download')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to download OBJ: $e')),
       );
     }
   }
@@ -338,11 +364,43 @@ class _ReconstructionStatusScreenState extends State<ReconstructionStatusScreen>
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton.icon(
-                  onPressed: _downloadModel,
+                  onPressed: _downloadMeshStl,
                   icon: const Icon(Icons.download),
-                  label: const Text('Download 3D Model'),
+                  label: const Text('Download STL (3D Print)'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: _downloadMeshObj,
+                  icon: const Icon(Icons.download),
+                  label: const Text('Download OBJ (Modeling)'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: _downloadModel,
+                  icon: const Icon(Icons.download),
+                  label: const Text('Download Point Cloud (PLY)'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey,
                     foregroundColor: Colors.white,
                   ),
                 ),

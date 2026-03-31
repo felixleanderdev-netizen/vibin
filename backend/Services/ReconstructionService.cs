@@ -80,6 +80,8 @@ public class ReconstructionService
             var databasePath = Path.Combine(reconDir, "database.db");
             var sparseDir = Path.Combine(reconDir, "sparse");
             var outputModel = Path.Combine(reconDir, "model.ply");
+            var meshObjPath = "";
+            var meshStlPath = "";
 
             // Step 1: Feature extraction
             status.Message = "Extracting features from images...";
@@ -109,7 +111,29 @@ public class ReconstructionService
                 throw new Exception("No sparse model directory found.");
             }
 
-            // Step 5: Extract measurements
+            // Step 5: Process mesh (smoothing, decimation, format conversion)
+            try
+            {
+                status.Message = "Processing mesh for 3D printing...";
+                await SaveStatusAsync(sessionId, status);
+                await RunPythonScript("scripts/mesh_processing.py", $"{outputModel} {reconDir}");
+
+                // Check for mesh processing results
+                var meshObjCheck = Path.Combine(reconDir, "model.obj");
+                var meshStlCheck = Path.Combine(reconDir, "model.stl");
+                if (File.Exists(meshObjCheck) && File.Exists(meshStlCheck))
+                {
+                    meshObjPath = meshObjCheck;
+                    meshStlPath = meshStlCheck;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Mesh processing failed, continuing with point cloud");
+                // Continue without mesh if processing fails
+            }
+
+            // Step 6: Extract measurements
             status.Message = "Extracting measurements from 3D model...";
             await SaveStatusAsync(sessionId, status);
             var measurementsJson = Path.Combine(reconDir, "measurements_temp.json");
@@ -179,6 +203,17 @@ public class ReconstructionService
             status.UpdatedAt = DateTime.UtcNow;
             status.Message = "Reconstruction and measurement extraction completed successfully.";
             status.ModelPath = outputModel;
+            
+            // Add mesh paths if available
+            if (!string.IsNullOrEmpty(meshObjPath))
+            {
+                status.MeshObjPath = meshObjPath;
+            }
+            if (!string.IsNullOrEmpty(meshStlPath))
+            {
+                status.MeshStlPath = meshStlPath;
+            }
+            
             await SaveStatusAsync(sessionId, status);
 
             var measurementFile = GetMeasurementFilePath(sessionId);

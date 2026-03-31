@@ -156,6 +156,32 @@ public class ScansController : ControllerBase
         return File(fileBytes, "application/octet-stream", Path.GetFileName(status.ModelPath));
     }
 
+    [HttpGet("{sessionId}/mesh/stl")]
+    public async Task<IActionResult> DownloadMeshStl(string sessionId)
+    {
+        var status = await _reconstructionService.GetStatusAsync(sessionId);
+        if (status?.Status != "succeeded" || string.IsNullOrEmpty(status.MeshStlPath) || !System.IO.File.Exists(status.MeshStlPath))
+        {
+            return NotFound(new { sessionId, message = "STL mesh not available" });
+        }
+
+        var fileBytes = await System.IO.File.ReadAllBytesAsync(status.MeshStlPath);
+        return File(fileBytes, "application/vnd.ms-pds", "model.stl");
+    }
+
+    [HttpGet("{sessionId}/mesh/obj")]
+    public async Task<IActionResult> DownloadMeshObj(string sessionId)
+    {
+        var status = await _reconstructionService.GetStatusAsync(sessionId);
+        if (status?.Status != "succeeded" || string.IsNullOrEmpty(status.MeshObjPath) || !System.IO.File.Exists(status.MeshObjPath))
+        {
+            return NotFound(new { sessionId, message = "OBJ mesh not available" });
+        }
+
+        var fileBytes = await System.IO.File.ReadAllBytesAsync(status.MeshObjPath);
+        return File(fileBytes, "application/octet-stream", "model.obj");
+    }
+
     [HttpGet("{sessionId}/measurements")]
     public async Task<ActionResult<MeasurementResult>> GetMeasurements(string sessionId)
     {

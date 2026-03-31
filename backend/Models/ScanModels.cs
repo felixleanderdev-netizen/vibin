@@ -30,7 +30,9 @@ public class ReconstructionStatus
     public string SessionId { get; set; } = string.Empty;
     public string Status { get; set; } = "not_started"; // not_started, processing, succeeded, failed
     public string? Message { get; set; }
-    public string? ModelPath { get; set; }
+    public string? ModelPath { get; set; } // Point cloud PLY
+    public string? MeshObjPath { get; set; } // Processed OBJ mesh
+    public string? MeshStlPath { get; set; } // Processed STL mesh (for 3D printing)
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 

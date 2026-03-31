@@ -4,7 +4,9 @@ class ReconstructionStatus {
   final String status; // not_started, processing, succeeded, failed
   final DateTime updatedAt;
   final String message;
-  final String? modelPath;
+  final String? modelPath; // Point cloud PLY
+  final String? meshObjPath; // Processed OBJ mesh
+  final String? meshStlPath; // Processed STL mesh (for 3D printing)
 
   ReconstructionStatus({
     required this.sessionId,
@@ -12,6 +14,8 @@ class ReconstructionStatus {
     required this.updatedAt,
     required this.message,
     this.modelPath,
+    this.meshObjPath,
+    this.meshStlPath,
   });
 
   factory ReconstructionStatus.fromJson(Map<String, dynamic> json) {
@@ -21,6 +25,8 @@ class ReconstructionStatus {
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       message: json['message'] as String,
       modelPath: json['modelPath'] as String?,
+      meshObjPath: json['meshObjPath'] as String?,
+      meshStlPath: json['meshStlPath'] as String?,
     );
   }
 
@@ -31,6 +37,8 @@ class ReconstructionStatus {
       'updatedAt': updatedAt.toIso8601String(),
       'message': message,
       'modelPath': modelPath,
+      'meshObjPath': meshObjPath,
+      'meshStlPath': meshStlPath,
     };
   }
 

@@ -62,15 +62,25 @@ class ReconstructionService {
   /// Download the 3D model file
   Future<String> downloadModel(String sessionId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/api/scans/$sessionId/model'),
+      Uri.parse('$baseUrl/api/scans/$sessionId/reconstruct/model'),
     );
 
     if (response.statusCode == 200) {
       // For now, just return the URL - in a real app you'd save the file
-      return '$baseUrl/api/scans/$sessionId/model';
+      return '$baseUrl/api/scans/$sessionId/reconstruct/model';
     } else {
       throw Exception('Failed to download model: ${response.statusCode}');
     }
+  }
+
+  /// Download the STL mesh (for 3D printing)
+  Future<String> downloadMeshStl(String sessionId) async {
+    return '$baseUrl/api/scans/$sessionId/mesh/stl';
+  }
+
+  /// Download the OBJ mesh
+  Future<String> downloadMeshObj(String sessionId) async {
+    return '$baseUrl/api/scans/$sessionId/mesh/obj';
   }
 
   /// Start reconstruction (if not automatic)
