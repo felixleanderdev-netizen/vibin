@@ -206,6 +206,45 @@ public class ScansController : ControllerBase
         return Ok(history);
     }
 
+    [HttpGet("{sessionId}/print/stats")]
+    public async Task<ActionResult<PrintStats>> GetPrintStats(string sessionId)
+    {
+        var stats = await _reconstructionService.GetPrintStatsAsync(sessionId);
+        if (stats == null)
+        {
+            return NotFound(new { sessionId, message = "Print stats not available" });
+        }
+
+        return Ok(stats);
+    }
+
+    [HttpPost("{sessionId}/print/order")]
+    public async Task<ActionResult<object>> SubmitPrintOrder(string sessionId, [FromBody] PrintOrder order)
+    {
+        if (order == null)
+        {
+            return BadRequest(new { message = "Print order data required" });
+        }
+
+        order.SessionId = sessionId;
+        var orderId = Guid.NewGuid().ToString();
+
+        // TODO: In production, persist order to database and send to print service
+        // For now, return confirmation
+        return Ok(new
+        {
+            orderId,
+            sessionId,
+            material = order.Material,
+            quality = order.Quality,
+            quantity = order.Quantity,
+            finishType = order.FinishType,
+            status = "confirmed",
+            estimatedShipping = DateTime.UtcNow.AddDays(7).ToString("o"),
+            message = "Print order submitted successfully"
+        });
+    }
+
     /// <summary>
     /// Health check endpoint.
     /// </summary>

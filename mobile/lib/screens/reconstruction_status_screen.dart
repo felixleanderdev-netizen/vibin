@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/reconstruction_models.dart';
 import '../services/reconstruction_service.dart';
+import 'print_order_widget.dart';
 
 /// Reconstruction status screen - shows processing progress and final results
 class ReconstructionStatusScreen extends StatefulWidget {
@@ -360,6 +361,44 @@ class _ReconstructionStatusScreenState extends State<ReconstructionStatusScreen>
               const SizedBox(height: 24),
 
               // Action buttons
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) => DraggableScrollableSheet(
+                        expand: false,
+                        initialChildSize: 0.9,
+                        maxChildSize: 0.95,
+                        builder: (context, scrollController) => PrintOrderWidget(
+                          sessionId: widget.sessionId,
+                          onOrderComplete: () {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Print order submitted!'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.print),
+                  label: const Text('Order 3D Print'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
               SizedBox(
                 width: double.infinity,
                 height: 50,

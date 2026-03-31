@@ -5,18 +5,21 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.Json;
 
 public class ReconstructionService
 {
     private readonly string _reconBaseDirectory;
     private readonly string _scanBaseDirectory;
     private readonly ILogger<ReconstructionService> _logger;
+    private readonly string _scriptBaseDirectory;
 
     public ReconstructionService(ILogger<ReconstructionService> logger)
     {
         _logger = logger;
         _reconBaseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "reconstructions");
         _scanBaseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "scans");
+        _scriptBaseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "scripts");
         Directory.CreateDirectory(_reconBaseDirectory);
     }
 
@@ -302,6 +305,74 @@ public class ReconstructionService
         var statusFile = GetStatusFilePath(sessionId);
         var json = System.Text.Json.JsonSerializer.Serialize(status, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(statusFile, json);
+    }
+
+    public async Task<PrintStats?> GetPrintStatsAsync(string sessionId)
+    {
+        var status = await GetStatusAsync(sessionId);
+        if (status?.Status != "succeeded" || string.IsNullOrEmpty(status.MeshStlPath) || !File.Exists(status.MeshStlPath))
+            return null;
+
+        try
+        {
+            var statsFile = Path.Combine(GetSessionDirectory(sessionId), "print_stats.json");
+            
+            // If cached, return it
+            if (File.Exists(statsFile))
+            {
+                var json = await File.ReadAllTextAsync(statsFile);
+                return System.Text.Json.JsonSerializer.Deserialize<PrintStats>(json);
+            }
+
+            // Run validation script
+            var validationOutput = Path.Combine(GetSessionDirectory(sessionId), "validation_output.json");
+            await RunPythonScript("scripts/validate_stl.py", $"{status.MeshStlPath}");
+
+            // Parse validation output
+            if (File.Exists(validationOutput))
+            {
+                var json = await File.ReadAllTextAsync(validationOutput);
+                var validationData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                
+                if (validationData != null)
+                {
+                    var stats = new PrintStats
+                    {
+                        StlValid = (bool?)validationData.GetValueOrDefault("valid") ?? false,
+                        ValidationMessage = validationData.GetValueOrDefault("message")?.ToString()
+                    };
+
+                    if (validationData.TryGetValue("print_stats", out var statsObj) && statsObj is JsonElement statsElement)
+                    {
+                        var statsJson = System.Text.Json.JsonSerializer.Serialize(statsElement);
+                        var statsData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(statsJson);
+                        if (statsData != null)
+                        {
+                            if (statsData.TryGetValue("dimensions_mm", out var dims) && dims is JsonElement dimsElement)
+                            {
+                                var dimArray = System.Text.Json.JsonSerializer.Deserialize<double[]>(dimsElement.GetRawText());
+                                if (dimArray != null) stats.DimensionsMm = dimArray;
+                            }
+                            if (statsData.TryGetValue("estimated_weight_grams", out var weight))
+                                stats.EstimatedWeightGrams = Convert.ToDouble(weight);
+                            if (statsData.TryGetValue("estimated_print_time_hours", out var time))
+                                stats.EstimatedPrintTimeHours = Convert.ToDouble(time);
+                        }
+                    }
+
+                    // Cache result
+                    await File.WriteAllTextAsync(statsFile, System.Text.Json.JsonSerializer.Serialize(stats, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+                    return stats;
+                }
+            }
+
+            return new PrintStats { StlValid = false, ValidationMessage = "Validation output not found" };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to get print stats for session {SessionId}", sessionId);
+            return new PrintStats { StlValid = false, ValidationMessage = ex.Message };
+        }
     }
 
     private async Task RunColmapCommand(string command, string arguments)

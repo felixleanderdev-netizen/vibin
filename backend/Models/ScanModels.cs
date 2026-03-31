@@ -48,3 +48,24 @@ public class MeasurementResult
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
+public class PrintStats
+{
+    public double[] DimensionsMm { get; set; } = [];
+    public double EstimatedWeightGrams { get; set; }
+    public double EstimatedPrintTimeHours { get; set; }
+    public bool StlValid { get; set; }
+    public string? ValidationMessage { get; set; }
+}
+
+public class PrintOrder
+{
+    public string SessionId { get; set; } = string.Empty;
+    public string Material { get; set; } = "PLA"; // PLA, ABS, PETG, Resin
+    public string Quality { get; set; } = "standard"; // draft, standard, premium
+    public int Quantity { get; set; } = 1;
+    public string FinishType { get; set; } = "raw"; // raw, sanded, painted
+    public string ShippingAddress { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string Status { get; set; } = "pending"; // pending, confirmed, printing, shipped, completed
+}
+
